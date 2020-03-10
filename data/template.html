@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>Für ein Lied abstimmen:</title>
+	<noscript><h1 style="color:red">Dieses Tool funktioniert nicht ohne Javascript bitte verwenden sie einen anderen Browser oder aktivieren sie Javascript.</h1></noscript>
+	<style type="text/css">
+		.choicebox {border-radius: 22px; font-size: 30px; background-color: #dddddd; width: 90%; margin: 0 auto; min-height: 200px; text-align: center; margin-top: 20px; padding: 20px; } .choicebox:active {background-color: #26772b } body{padding: 30px; } a.nostyle:link {text-decoration: inherit; color: inherit; cursor: auto; } a.nostyle:visited {text-decoration: inherit; color: inherit; cursor: auto; } </style>
+	<script type="text/javascript">
+		var songs;
+		function httpGet(theUrl)
+		{
+		    var xmlHttp = new XMLHttpRequest();
+		    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+		    xmlHttp.send( null );
+		    return xmlHttp.responseText;
+		}
+		function parseSongs(){ 
+			songs = httpGet("/lit.txt").split(",");
+			songs.shift();
+			document.getElementById('cb0').innerHTML = songs[0].replace(".mp3", "");
+			document.getElementById('cb1').innerHTML = songs[1].replace(".mp3", "");
+			document.getElementById('cb2').innerHTML = songs[2].replace(".mp3", "");
+			console.log(songs);
+
+		}
+		var round_id = httpGet("rnd.txt");
+		document.addEventListener("DOMContentLoaded", function(){
+  			// Handler when the DOM is fully loaded
+  			parseSongs();
+			
+
+			var voted_rounds_raw = localStorage.getItem("voted_rounds");
+
+			var voted_rounds_parsed = voted_rounds_raw.split(",");
+			console.log(voted_rounds_parsed);
+
+			if (voted_rounds_parsed.includes(round_id.toString())){
+				document.body.innerHTML = '<p style="color:red;">Du hast in dieser Runde schon abgestimmt! Bitte <a href="/">neu laden</a></p>';
+				alert('Du hast in dieser Runde schon abgestimmt! Bitte neu laden');
+			}
+
+			
+		});
+
+
+		function vote (id) {
+			var voted_rounds_raw = localStorage.getItem("voted_rounds");
+			if (voted_rounds_raw == null) {
+				voted_rounds_raw = "";
+			}
+			var voted_rounds_parsed = voted_rounds_raw.split(",");
+
+
+			if (voted_rounds_parsed.includes(round_id.toString())){
+				document.body.innerHTML = '<p style="color:red;">Du hast in dieser Runde schon abgestimmt!</p>';
+				alert('Du hast in dieser Runde schon abgestimmt!');
+			}
+			else {
+				var voted_rounds_raw = localStorage.getItem("voted_rounds");
+
+ 
+				if (voted_rounds_raw == null) {
+					var voted_rounds_new = round_id + ",";
+				}
+				else {
+					var voted_rounds_new = voted_rounds_raw + round_id + ",";
+				}
+
+				localStorage.setItem("voted_rounds", voted_rounds_new);
+				httpGet("/vote/" + id.toString());
+				alert("Abgestimmt für " + songs[id].replace(".mp3", ""));
+				document.location.reload();
+			}
+		}
+	</script>
+</head>
+<body>
+	<div class="choicebox" onclick="vote(0)" id="cb0">
+		song1
+	</div>
+	<div class="choicebox" onclick="vote(1)" id="cb1">
+		song2
+	</div>
+	<div class="choicebox" onclick="vote(2)" id="cb2">
+		song3
+	</div>
+</body>
+</html>
